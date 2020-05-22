@@ -91,7 +91,7 @@ switch($a)
             $DB = Get-MailboxDatabase -Server $server -Status | select name -ExpandProperty Activationpreference | Where-Object { $_.key -like $Server -and $_.value -eq 1 } | select name -First 1
             $DB = Get-MailboxDatabase -Identity $DB.Name -Status | select name -ExpandProperty Activationpreference
             $server3 = ($DB | select name, key -ExpandProperty value | Where-Object { $_ -eq 3 } | select key).key.Name
-            echo "The DBs are moving from $server to $server2"
+            echo "The DBs are moving from $server to $server3"
             Move-ActiveMailboxDatabase -server $server -ActivateOnServer $server3
         }
     }
