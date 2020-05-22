@@ -43,7 +43,7 @@ foreach($file in $delFiles)
 
 echo "=========================================================================================================="
 
-$a = Read-Host "`n1)Pre Checks `n2)Pre checks to AP 2 server `n3)Pre checks to AP 3 server  `n4)Post Checks without rebalance `n5)Post Checks with rebalance `n6)Rebalance `n`nEnter your Choice  "
+$a = Read-Host "`n1)Pre Checks `n2)Pre checks to AP 2 server `n3)Pre checks to AP 3 server  `n4)Post Checks without rebalance `n5)Post Checks with rebalance `n6)Rebalance `n7)Specific Post Checks `n`nEnter your Choice  "
 
 
 echo "=========================================================================================================="
@@ -233,6 +233,72 @@ foreach($server in $servers)
           }
         }
         $Servers | ForEach-Object { Get-MailboxDatabaseCopyStatus -Server $_ ; echo "---------------------------------------------------------------------------------------------------------------------------" } >> D:\checkouts\out\DBstatus.txt
+    }
+
+    7{
+    cls
+    $servers = gc $Serverlist
+$b = Read-Host "`n1)Database copy status `n2)Service Health `n3)disk space `n4)McAfee services `n5)Replication Health `n`nEnter your Choice  "
+echo "---------------------------------------------------------------------------------------"
+switch($b)
+{
+    1{
+        echo "checking DB status`n"
+        foreach($server in $servers){
+            echo $server   
+            echo $server >> D:\checkouts\out\DBstatus.txt
+            echo "===========" >> D:\checkouts\out\DBstatus.txt
+            Get-MailboxDatabaseCopyStatus -server $server | ft -au >> D:\checkouts\out\DBstatus.txt
+        }
+    }
+
+    2{
+        echo "Checking Service Health`n"
+        foreach($server in $servers)
+        {
+            echo $server
+            echo $server >> D:\checkouts\out\Serviceshealth.txt
+            echo "===========" >> D:\checkouts\out\Serviceshealth.txt 
+            Test-ServiceHealth -server $server >> D:\checkouts\out\Serviceshealth.txt
+        }
+
+    }
+
+    3{
+        echo "Checking disk space`n"
+        foreach($server in $servers)
+        {
+            echo $server
+            echo $server >> D:\checkouts\out\Diskspace.txt
+            echo "===========" >> D:\checkouts\out\Diskspace.txt
+            Get-WmiObject win32_logicaldisk -ComputerName $server | Select-Object DeviceID,Size,FreeSpace | ft -au >> D:\checkouts\out\Diskspace.txt
+        }
+    }
+
+    4{
+        echo "Checking McAfee Services`n"
+        foreach($server in $servers)
+        {
+            echo $server
+            echo $server >> D:\checkouts\out\McAfeeServices.txt
+            echo "===========" >> D:\checkouts\out\McAfeeServices.txt
+            Get-Service -ComputerName $server -DisplayName "McAfee*" | select -First 8 | ft -au >> D:\checkouts\out\McAfeeServices.txt
+        }
+    }
+
+    5{
+        echo "Checking Replication Health`n"
+        foreach($server in $servers)
+        {
+            echo $server
+            echo $server >> D:\checkouts\out\RHcheck.txt
+            echo "===========" >> D:\checkouts\out\RHcheck.txt
+            Test-ReplicationHealth -Identity $server | ft -au >> D:\checkouts\out\RHcheck.txt
+        }
+    }
+
+
+}
     }
 }
 
