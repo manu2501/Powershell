@@ -2,10 +2,9 @@
 
 [CmdletBinding()]
 param (
-    [Parameter(ValueFromPipeline = $true)]
-    [String]
-    $list = $env:COMPUTERNAME
+    [String]$Path
 )
+
 
 
 #Functions Part
@@ -15,7 +14,6 @@ function Write-HostCenter {
     param($Message, $color) 
     Write-Host ("{0}{1}" -f (' ' * (([Math]::Max(0, $Host.UI.RawUI.BufferSize.Width / 2) - [Math]::Floor($Message.Length / 2)))), $Message) -ForegroundColor $color
 }
-
 #showMenu function used to diplay the Menu for the activitess
 function ShowMenu {
     Write-Host "Select one of the below Actions :: " -ForegroundColor Blue
@@ -29,32 +27,38 @@ function ShowMenu {
     Write-Host "7. perform particular server Health checks"
     Write-Host "Press Q to Exit" 
 }
-
 function Failover {
     write-Host "Performing Failover"
 }
 
-function Failover2{
+function Failover2 {
     write-Host "Performing failover 2"
 }
 
-function Failover3{
+function Failover3 {
     write-Host "Performing failover 3"
 }
 
 #main Part
-
 Clear-Host
 
+if (Test-Path -Path $Path) {
+    $servers = Get-Content -Path $Path | Sort-Object 
+}
+else {
+    $servers = $env:COMPUTERNAME
+}
+
+
 Write-HostCenter "Welcome to Checkouts Script"  Green
-ShowMenu
-Write-Host 
+
+
 
 $selection = Read-Host "Please make a selection (1 to 7)  "
 
 switch ($selection) {
     '1' {
-        Failover
+        Write-Host $servers[0]
     }
     '2' {
         Failover2
