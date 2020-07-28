@@ -5,11 +5,7 @@ param (
     [String]$Path = 0
 )
 
-
-
 #Functions Part
-
-
 #showMenu function used to diplay the Menu for the activitess
 function ShowMenu {
     Write-Host "`n1. Move Databases to Partner server based on your selection"
@@ -22,10 +18,10 @@ function ShowMenu {
     Write-Host "8. perform particular server Health checks"
     Write-Host "Press Q to Exit" 
 }
-function Failover($servers) {
+function Failover($content) {
     Clear-Host
     Write-Host "`nPerforming Database Movement based on your selection`n----------------------------------------------------" -ForegroundColor Cyan
-    $Serverlist = $servers
+    $Serverlist = $content
 
     foreach ($server in $serverlist) {
         $DB = Get-MailboxDatabase -Server $server -Status | Select-Object name -ExpandProperty Activationpreference | Where-Object { $_.key -like $Server -and $_.value -eq 1 } | Select-Object name -First 1
@@ -45,10 +41,10 @@ function Failover($servers) {
         Write-Output "==================================================================================================="
     } 
 }
-function Failover2($servers) {
+function Failover2($content) {
     Clear-Host
     Write-Host "`nPerforming Database Movement to Activation Preference 2 server`n--------------------------------------------------------------" -ForegroundColor Cyan
-    $Serverlist = $servers
+    $Serverlist = $content
 
     foreach ($server in $serverlist) {
         $DB = Get-MailboxDatabase -Server $server -Status | Select-Object name -ExpandProperty Activationpreference | Where-Object { $_.key -like $Server -and $_.value -eq 1 } | Select-Object name -First 1
@@ -58,10 +54,10 @@ function Failover2($servers) {
         Write-Output "Move-ActiveMailboxDatabase -server $server -ActivateOnServer $server2"
     }
 }
-function Failover3($servers) {
+function Failover3($content) {
     Clear-Host
     Write-Host "`nPerforming Database Movement to Activation Preference 3 server`n--------------------------------------------------------------" -ForegroundColor Cyan
-    $Serverlist = $servers
+    $Serverlist = $content
 
     foreach ($server in $serverlist) {
         $DB = Get-MailboxDatabase -Server $server -Status | Select-Object name -ExpandProperty Activationpreference | Where-Object { $_.key -like $Server -and $_.value -eq 1 } | Select-Object name -First 1
@@ -91,21 +87,21 @@ function Rebalance($server) {
     }
 }
 
-function DAGRebalance($servers) {
+function DAGRebalance($DAG) {
 }
 
 #main Part
 Clear-Host
 
 if (Test-Path -Path $Path) {
-    $servers = Get-Content -Path $Path | Sort-Object 
+    $content = Get-Content -Path $Path | Sort-Object 
 }
 else {
-    $servers = $env:COMPUTERNAME
+    $content = $env:COMPUTERNAME
 }
 
 
-Remove-Item "D:\checkouts\out\*"
+Remove-Item "D:\checkouts\out\*" > $0
 
 Write-Host "Welcome to Checkouts Script" -ForegroundColor Green
 
@@ -115,23 +111,23 @@ $selection = Read-Host "`nPlease make a selection (1 to 7)  "
 
 switch ($selection) {
     '1' {
-        Failover($servers)
+        Failover($content)
     }
     '2' {
-        Failover2($servers)
+        Failover2($content)
     } 
     '3' {
-        Failover3($servers)
+        Failover3($content)
     } 
     '4' {
         Write-Host "Rebalancing the Databases for the given Servers`n-----------------------------------------------" -ForegroundColor Cyan
-        foreach ($server in $servers) {
+        foreach ($server in $content) {
             Rebalance($server)
         }
     }
     '5' {
         Write-Host "Rebalancing the Databases for the given DAGs`n-----------------------------------------------" -ForegroundColor Cyan  
-        foreach ($DAG in $servers) {
+        foreach ($DAG in $content) {
             DAGRebalance($DAG)
         } 
     }
