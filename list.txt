@@ -1,5 +1,3 @@
-Alphabetes
-===========
 z
 q
 w
