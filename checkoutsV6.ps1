@@ -34,8 +34,8 @@ function Failover($content) {
         $Select = Read-Host "Enter your selection (1 or 2) "
 
         switch ($Select) {
-            1 { Write-Output "Move-ActivemailboxDatabase -server $server -ActivateonServer $server2" ; Break }
-            2 { Write-Output "Move-ActivemailboxDatabase -server $server -ActivateonServer $server3" ; Break }
+            1 {Move-ActivemailboxDatabase -server $server -ActivateonServer $server2 ; Break }
+            2 {Move-ActivemailboxDatabase -server $server -ActivateonServer $server3 ; Break }
         }
 
         Write-Output "==================================================================================================="
@@ -51,7 +51,7 @@ function Failover2($content) {
         $DB = Get-MailboxDatabase -Identity $DB.Name -Status | Select-Object name -ExpandProperty Activationpreference
         $server2 = ($DB | Select-Object name, key -ExpandProperty value | Where-Object { $_ -eq 2 } | Select-Object key).key.Name
         Write-Host "The DBs are moving from $server to $server2"
-        Write-Output "Move-ActiveMailboxDatabase -server $server -ActivateOnServer $server2"
+        Move-ActiveMailboxDatabase -server $server -ActivateOnServer $server2
     }
 }
 function Failover3($content) {
@@ -64,7 +64,7 @@ function Failover3($content) {
         $DB = Get-MailboxDatabase -Identity $DB.Name -Status | Select-Object name -ExpandProperty Activationpreference
         $server3 = ($DB | Select-Object name, key -ExpandProperty value | Where-Object { $_ -eq 3 } | Select-Object key).key.Name
         Write-Host "The DBs are moving from $server to $server3"
-        Write-Output "Move-ActiveMailboxDatabase -server $server -ActivateOnServer $server3"
+        Move-ActiveMailboxDatabase -server $server -ActivateOnServer $server3
     }
 }
 function Rebalance($server) {
@@ -76,7 +76,7 @@ function Rebalance($server) {
         $ps = $ps.server.name
         if ($ps -ne $server) {
             Write-Host "considering the move of $DB from $ps to $server" -ForegroundColor Yellow
-            Write-Output "Move-ActiveMailboxDatabase -Identity $DB -ActivateOnServer $server"
+            Move-ActiveMailboxDatabase -Identity $DB -ActivateOnServer $server
         
         }
         else {
@@ -111,7 +111,8 @@ function McAfeeCheck($server) {
     Get-Service -ComputerName $server -DisplayName "McAfee*" | Select-Object -First 8 | Format-Table -au >> D:\checkouts\out\McAfeeServices.txt
 }
 function LastReboot($server) {
-
+    Write-Host "Checking Last Reboot time of server"
+    invoke-command -computername $server -scriptblock {Get-WmiObject Win32_OperatingSystem | Select-Object PScomputerName, @{l="LastBootTime"; e={[Management.ManagementDateTimeConverter]::ToDateTime($_.LastBootUpTime)}}} | Select-Object * -excludeproperty RunSpaceId | Format-Table -AutoSize >> D:\checkouts\out\LastRebootTime.txt
 }
 function DrivesCheck($server) {
     Write-Output "checking Drives Space"
@@ -210,12 +211,14 @@ switch ($selection) {
     }
     '8' {
         subMenu
-        $selection2 = Read-Host "`n select the options (1 to 6) "
+        $selection2 = Read-Host "`n select the options (1 to 6) :"
 
         switch ($selection2) {
             '1' {
                 foreach ($server in $content) {
-                    LastReboot($server)
+                    LastReboot($server)class ClassName {
+                        
+                    }
                 }
 
             }
