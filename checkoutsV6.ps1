@@ -86,30 +86,58 @@ function Rebalance($server) {
         Write-Output "--------------------------------------------"
     }
 }
-
-function RHCheck($server){
+function DAGRebalance($DAG) {
+    $servers = Get-DatabaseAvailabilityGroup -Identity $DAG | Select-Object -ExpandProperty:Servers
+    foreach ($server in $servers) {
+        Rebalance($server)
+    }
+}
+function RHCheck($server) {
+    Write-Output "Testing Replication Health"
+    Write-Output $server >> D:\checkouts\out\RHcheck.txt
+    Write-Output "===========" >> D:\checkouts\out\RHcheck.txt
+    Test-ReplicationHealth -Identity $server | Format-Table -au >> D:\checkouts\out\RHcheck.txt
+}
+function ServiceHealth($server) {
+    Write-Output "Checking Service Health"    
+    Write-Output $server >> D:\checkouts\out\Serviceshealth.txt
+    Write-Output "===========" >> D:\checkouts\out\Serviceshealth.txt 
+    Test-ServiceHealth -server $server >> D:\checkouts\out\Serviceshealth.txt
+}
+function McAfeeCheck($server) {
+    Write-Output "checking McAfee Services"
+    Write-Output $server >> D:\checkouts\out\McAfeeServices.txt
+    Write-Output "===========" >> D:\checkouts\out\McAfeeServices.txt
+    Get-Service -ComputerName $server -DisplayName "McAfee*" | Select-Object -First 8 | Format-Table -au >> D:\checkouts\out\McAfeeServices.txt
+}
+function LastReboot($server) {
 
 }
-
-function ServiceHealth($server){
-
-}
-function McAfeeCheck($server){
-
-}
-
-function LastReboot($server){
+function DrivesCheck($server) {
+    Write-Output "checking Drives Space"
+    Write-Output $server >> D:\checkouts\out\Diskspace.txt
+    Write-Output "===========" >> D:\checkouts\out\Diskspace.txt
+    Get-WmiObject win32_logicaldisk -ComputerName $server | Select-Object DeviceID, Size, FreeSpace | Format-Table -au >> D:\checkouts\out\Diskspace.txt
 
 }
-function DAGRebalance($DAG){
-    
+function DBCheck($server) {
+    Write-Output $server >> D:\checkouts\out\DBstatus.txt
+    Write-Output "===========" >> D:\checkouts\out\DBstatus.txt
+    Get-MailboxDatabaseCopyStatus -server $server | Format-Table -au >> D:\checkouts\out\DBstatus.txt
 }
-function DrivesCheck($server){
+function SubMenu {
+    Clear-Host
+    write-Host "Select the below particular checks`n" -BackgroundColor Cyan
+    Write-Host "`n1. Last Reboot"
+    Write-Host "2. Database checks"
+    Write-Host "3. Service Health"
+    write-host "4. Drives Check"
+    Write-Host "5. McAfee Services check"
+    Write-Host "6. Replication Health check"
+}
 
-}
-function DBCheck($server){
 
-}
+
 #main Part
 Clear-Host
 
@@ -151,15 +179,72 @@ switch ($selection) {
             DAGRebalance($DAG)
         } 
     }
-
     '6' {
+        Write-Host "Performing post Checks for the given Servers without Rebalancing`n-----------------------------------------------" -ForegroundColor Cyan
+        foreach ($server in $content) {
+            Write-Host "Running Checkouts for the server $Server" -ForegroundColor DarkGray
+            LastReboot($server)
+            DBCheck($server)
+            ServiceHealth($server)
+            DrivesCheck($server)
+            McAfeeCheck($server)
+            RHCheck($server)
+            Write-Host "`n"
+        }
 
     }
     '7' {
+        Write-Host "Performing post Checks for the given Servers with Rebalancing`n-----------------------------------------------" -ForegroundColor Cyan
+        foreach ($server in $content) {
+            Write-Host "Running Checkouts for the server $Server" -ForegroundColor DarkGray
+            Rebalance($server)
+            LastReboot($server)
+            DBCheck($server)
+            ServiceHealth($server)
+            DrivesCheck($server)
+            McAfeeCheck($server)
+            RHCheck($server)
+            Write-Host "`n"
+        }
 
     }
     '8' {
+        subMenu
+        $selection2 = Read-Host "`n select the options (1 to 6) "
 
+        switch ($selection2) {
+            '1' {
+                foreach ($server in $content) {
+                    LastReboot($server)
+                }
+
+            }
+            '2' {
+                foreach ($server in $content) {
+                    DBCheck($server)
+                }
+            }
+            '3' {
+                foreach ($server in $content) {
+                    ServiceHealth($server)
+                }
+            }
+            '4' {
+                foreach ($server in $content) {
+                    DrivesCheck($server)
+                }
+            }
+            '5' {
+                foreach ($server in $content) {
+                    McAfeeCheck($server)
+                }
+            }
+            '6' {
+                foreach ($server in $content) {
+                    RHCheck($server)
+                }
+            }
+        }
     }
     'q' {
         return
