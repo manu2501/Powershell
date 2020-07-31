@@ -87,9 +87,29 @@ function Rebalance($server) {
     }
 }
 
-function DAGRebalance($DAG) {
+function RHCheck($server){
+
 }
 
+function ServiceHealth($server){
+
+}
+function McAfeeCheck($server){
+
+}
+
+function LastReboot($server){
+
+}
+function DAGRebalance($DAG){
+    
+}
+function DrivesCheck($server){
+
+}
+function DBCheck($server){
+
+}
 #main Part
 Clear-Host
 
